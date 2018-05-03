@@ -86,7 +86,7 @@ def convert_mth_strings ( mth_string ):
 #### VARIABLES 1.0
 
 entity_id = "NFTRWP_WAHNFT_gov"
-url = "http://www.worcsacute.nhs.uk/about-us/disclosures/"
+url = "http://www.worcsacute.nhs.uk/our-trust/corporate-information/disclosures"
 errors = 0
 data = []
 
@@ -99,25 +99,20 @@ soup = BeautifulSoup(html, 'lxml')
 
 #### SCRAPE DATA
 
-links = soup.find('div', 'pel asset-browser').find_all('a')
+links = soup.find_all('h4')
 for link in links:
-    if 'http://' not in link['href']:
-        year_url = 'http://www.worcsacute.nhs.uk/about-us/disclosures/'+link['href']
+    if 'http://' not in link.find('a', 'koowa_header__link')['href']:
+        year_url = 'http://www.worcsacute.nhs.uk'+link.find('a', 'koowa_header__link')['href']
     else:
-        year_url = link['href']
+        year_url = link.find('a', 'koowa_header__link')['href']
     year_html = urllib2.urlopen(year_url)
     year_soup = BeautifulSoup(year_html, 'lxml')
-    try:
-        tables = year_soup.find('table', 'DataGrid oDataGrid').find('tbody').find_all('tr')
-    except:
-        break
+    tables = year_soup.find_all('div', 'docman_download')
     for table in tables:
-        file_links = 'http://www.worcsacute.nhs.uk'+table.find_all('td')[-1].find('a')['href']
-        file_title = table.find_all('td')[-1].find('a')['title'].strip().split('25k')[-1].strip().split('25K')[-1].strip().split('-')[-1].strip()
-        csvMth = file_title[:3]
-        csvYr = file_title[-4:]
-        if ' to ' in table.find_all('td')[-1].find('a')['title'].strip():
-            csvMth = 'Q0'
+        file_links = 'http://www.worcsacute.nhs.uk'+table.find('a')['href']
+        file_title = table.find('a')['data-title']
+        csvMth = file_title.split()[-2].strip()[:3]
+        csvYr = file_title.split()[-1].strip()[-4:]
         csvMth = convert_mth_strings(csvMth.upper())
         data.append([csvYr, csvMth, file_links])
 
